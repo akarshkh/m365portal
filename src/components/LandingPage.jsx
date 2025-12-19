@@ -1,81 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Zap, ArrowRight, Mail, Lock, User, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../authConfig';
+import { motion } from 'framer-motion';
+import { Shield, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const { instance } = useMsal();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (error) setError('');
-  };
-
-  const validateForm = () => {
-    if (!formData.email || !formData.password) {
-      setError('Please fill in all required fields.');
-      return false;
-    }
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
+  const handleLogin = async () => {
     setLoading(true);
     setError('');
-
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const username = formData.email.split('@')[0];
-      localStorage.setItem('m365_user', username);
-      setSuccess(true);
+      const loginResponse = await instance.loginPopup(loginRequest);
+      localStorage.setItem('m365_user', loginResponse.account.name || loginResponse.account.username.split('@')[0]);
+      navigate('/dashboard');
     } catch (err) {
-      setError('Authentication failed. Please try again.');
+      console.error(err);
+      setError('Login failed. Please ensure your Azure App Registration is configured correctly.');
     } finally {
       setLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass p-12 text-center max-w-md w-full"
-        >
-          <div className="flex justify-center mb-6">
-            <CheckCircle className="w-20 h-20 text-green-400" />
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-4">Welcome Back!</h2>
-          <p className="text-gray-400 mb-8">
-            You have successfully signed in. Redirecting to your dashboard...
-          </p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="btn-primary w-full"
-          >
-            Go to Dashboard
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 md:p-12 overflow-hidden">
@@ -109,13 +58,8 @@ const LandingPage = () => {
 
           <p className="text-lg text-gray-400 max-w-lg leading-relaxed">
             Gain deeper visibility and safer execution for your Microsoft 365 environment.
-            Automate tasks, manage security, and streamline administration in one powerful interface.
+            Connect your Microsoft account to securely manage your tenant.
           </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
-            <div className="flex items-start space-x-4"></div>
-            <div className="flex items-start space-x-4"></div>
-          </div>
         </motion.div>
 
         {/* Right Side: Signin Card */}
@@ -129,70 +73,45 @@ const LandingPage = () => {
           <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/20 blur-3xl rounded-full"></div>
 
           <motion.div layout className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-gray-400">Sign in to continue to your dashboard</p>
+            <h2 className="text-3xl font-bold text-white mb-2">Enterprise Sign In</h2>
+            <p className="text-gray-400">Sign in with your Microsoft 365 Work Account</p>
           </motion.div>
 
-          <AnimatePresence mode="wait">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center space-x-3 text-red-400 text-sm"
-              >
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <span>{error}</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 ml-1">Work Email</label>
-              <div className="relative">
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="name@company.com"
-                  required
-                />
-              </div>
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center space-x-3 text-red-400 text-sm">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <span>{error}</span>
             </div>
+          )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 ml-1">Password</label>
-              <div className="relative">
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
-
+          <div className="space-y-6">
             <button
+              onClick={handleLogin}
               disabled={loading}
-              className="btn-primary w-full py-4 text-lg flex items-center justify-center space-x-2 mt-4"
+              className="btn-primary w-full py-6 text-lg flex items-center justify-center space-x-4 mt-4"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Signing In...</span>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Authenticating...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In</span>
+                  <div className="grid grid-cols-2 gap-0.5">
+                    <div className="w-2 h-2 bg-[#f25022]"></div>
+                    <div className="w-2 h-2 bg-[#7fba00]"></div>
+                    <div className="w-2 h-2 bg-[#00a4ef]"></div>
+                    <div className="w-2 h-2 bg-[#ffb900]"></div>
+                  </div>
+                  <span>Sign in with Microsoft</span>
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>
-          </form>
+            <p className="text-center text-xs text-gray-500 italic">
+              Secure enterprise connection via Microsoft Identity platform
+            </p>
+          </div>
         </motion.div>
       </div>
 
