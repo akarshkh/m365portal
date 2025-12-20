@@ -12,6 +12,7 @@ const ServicePage = () => {
     const { instance, accounts } = useMsal();
 
     const [reportData, setReportData] = useState([]);
+    const [filterText, setFilterText] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -25,6 +26,15 @@ const ServicePage = () => {
 
     const name = serviceNames[serviceId] || 'Service Module';
     const isExchange = serviceId === 'exchange';
+
+    const filteredData = reportData.filter(item => {
+        if (!filterText) return true;
+        const searchStr = filterText.toLowerCase();
+        const name = item.displayName?.toLowerCase() || '';
+        const email = item.emailAddress?.toLowerCase() || '';
+        const raw = String(item).toLowerCase();
+        return name.includes(searchStr) || email.includes(searchStr) || raw.includes(searchStr);
+    });
 
     const fetchData = async () => {
         setLoading(true);
@@ -126,15 +136,16 @@ const ServicePage = () => {
                 <div className="glass p-8">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-xl font-bold">
-                            {isExchange ? 'Exchange Mailbox Report (Real-time)' : 'Latest Reports'}
+                            {isExchange ? 'Exchange Mailbox Report' : 'Latest Reports'}
                         </h3>
                         <div className="flex items-center space-x-3">
                             <div className="relative">
-                                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                                 <input
                                     type="text"
-                                    placeholder="Filter data..."
-                                    className="bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500/50"
+                                    placeholder="Search here"
+                                    value={filterText}
+                                    onChange={(e) => setFilterText(e.target.value)}
+                                    className="bg-white/5 border border-white/10 rounded-lg py-2 px-4 text-sm focus:outline-none focus:border-blue-500/50"
                                 />
                             </div>
                             <button className="p-2 hover:bg-white/10 rounded-lg border border-white/10">
@@ -172,7 +183,7 @@ const ServicePage = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5 text-sm">
-                                    {reportData.length > 0 ? reportData.map((report, i) => (
+                                    {filteredData.length > 0 ? filteredData.map((report, i) => (
                                         <tr key={i} className="hover:bg-white/5 transition-colors">
                                             {isExchange ? (
                                                 <>

@@ -18,7 +18,7 @@ export class GraphService {
         try {
             // 1. Get List of Users
             const usersResponse = await this.client.api("/users")
-                .select("id,displayName,userPrincipalName")
+                .select("id,displayName,userPrincipalName,mail")
                 .top(25)
                 .get();
 
@@ -28,19 +28,22 @@ export class GraphService {
             // Using BETA for deeper property access
             const detailedReports = await Promise.all(users.map(async (user) => {
                 try {
+                    // Note: accessing mailboxSettings for other users requires MailboxSettings.Read and can be restricted.
+                    // If this fails, we return basic user info.
                     const settings = await this.client.api(`/beta/users/${user.id}/mailboxSettings`).get();
 
                     return {
                         displayName: user.displayName,
-                        emailAddress: user.userPrincipalName,
+                        emailAddress: user.mail || user.userPrincipalName,
                         archivePolicy: settings.archiveStatus === 'active' || settings.archiveStatus === 'enabled',
-                        retentionPolicy: "Default Policy",
+                        retentionPolicy: settings.retentionPolicy || "Default Policy",
                         autoExpanding: settings.autoExpandingArchive === 'enabled' || settings.autoExpandingArchive === 'true'
                     };
                 } catch (err) {
+                    console.warn(`Failed to fetch settings for ${user.displayName}`, err);
                     return {
                         displayName: user.displayName,
-                        emailAddress: user.userPrincipalName,
+                        emailAddress: user.mail || user.userPrincipalName,
                         archivePolicy: false,
                         retentionPolicy: "Not Set",
                         autoExpanding: false

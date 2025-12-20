@@ -1,7 +1,7 @@
 export const msalConfig = {
     auth: {
-        clientId: "YOUR_CLIENT_ID_HERE", // Replace with your Application (client) ID from Azure Portal
-        authority: "https://login.microsoftonline.com/YOUR_TENANT_ID_HERE", // Replace with your Directory (tenant) ID
+        clientId: import.meta.env.VITE_CLIENT_ID,
+        authority: `https://login.microsoftonline.com/${import.meta.env.VITE_TENANT_ID}`,
         redirectUri: window.location.origin,
     },
     cache: {
@@ -15,7 +15,8 @@ export const loginRequest = {
     scopes: [
         "User.Read",
         "Directory.Read.All",
-        "Reports.Read.All"
+        "Reports.Read.All",
+        "MailboxSettings.Read"
     ]
 };
 
