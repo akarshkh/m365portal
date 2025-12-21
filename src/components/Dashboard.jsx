@@ -71,15 +71,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className="flex items-center space-x-6">
-                    <div className="hidden md:flex relative items-center">
-                        <input
-                            type="text"
-                            placeholder="Search services..."
-                            className="rounded-full py-2.5 px-6 text-sm focus:outline-none bg-white/5 border border-white/10 w-64 focus:w-80 transition-all"
-                        />
-                    </div>
-                    <Bell className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white transition-colors" />
-                    <Settings className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white transition-colors" />
+
                     <div className="flex items-center space-x-3 border-l border-white/10 pl-6 ml-2">
                         <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm uppercase">
                             {username.substring(0, 2)}
