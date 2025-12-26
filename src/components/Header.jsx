@@ -31,15 +31,22 @@ const Header = ({
                         <div className="w-2.5 h-2.5 bg-[#00a4ef] rounded-[1px]"></div>
                         <div className="w-2.5 h-2.5 bg-[#ffb900] rounded-[1px]"></div>
                     </div>
-
+                    <div className="hidden md:flex flex-col">
+                        <h1 className="text-white font-semibold text-lg leading-tight">Microsoft 365</h1>
+                        <span className="text-gray-500 text-[10px] font-medium uppercase tracking-widest">Admin Center</span>
+                    </div>
                 </div>
             </div>
 
             {/* Right Section */}
             {isAuthenticated ? (
                 <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center font-bold text-xs text-white shadow-lg">
+                    <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                        <div className="hidden sm:flex flex-col items-end">
+                            <p className="text-sm font-medium text-white leading-none">{username || 'Admin User'}</p>
+                            <p className="text-[11px] text-gray-500 mt-0.5">Global Admin</p>
+                        </div>
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center font-bold text-sm text-white shadow-lg border-2 border-white/20">
                             {username ? username.substring(0, 2).toUpperCase() : 'AD'}
                         </div>
                     </div>

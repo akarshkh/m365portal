@@ -4,7 +4,8 @@ import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 import { GraphService } from '../services/graphService';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Filter, Download, AlertCircle, CheckCircle2, XCircle, Loader2, Shield, Archive, Database, HelpCircle, X, ArrowLeft } from 'lucide-react';
+import { RefreshCw, Filter, Download, AlertCircle, CheckCircle2, XCircle, Loader2, Shield, Archive, Database, HelpCircle, X, ArrowLeft, Mail } from 'lucide-react';
+import styles from './DetailPage.module.css';
 
 const TableHeader = ({ label, tooltip, center = false }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -273,33 +274,31 @@ const ExchangeReport = () => {
     }, [instance, accounts]);
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white">
-            {/* Header removed for ServiceLayout */}
-
-            <div className="w-full">
-                <button
-                    onClick={() => navigate('/service/admin')}
-                    className="flex items-center text-gray-400 hover:text-white mb-6 transition-colors group"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Back to Admin
+        <div className={styles.pageContainer}>
+            <div className={styles.contentWrapper}>
+                <button onClick={() => navigate('/service/admin')} className={styles.backButton}>
+                    <ArrowLeft style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
+                    Back to Dashboard
                 </button>
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold font-['Outfit'] bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent leading-tight mb-2">
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                    <div className={styles.pageHeader}>
+                        <h1 className={styles.pageTitle}>
+                            <Mail style={{ width: '2rem', height: '2rem', color: '#3b82f6' }} />
                             Exchange Mailbox Report
                         </h1>
-                        <p className="text-sm text-gray-400">Real-time mailbox analytics</p>
+                        <p className={styles.pageSubtitle}>
+                            Real-time mailbox analytics, archive status, and email activity monitoring
+                        </p>
                     </div>
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                    <button
                         onClick={fetchData}
-                        className="flex items-center space-x-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-all text-sm font-semibold text-white"
+                        className={`${styles.actionButton} ${styles.actionButtonSecondary}`}
+                        style={{ height: 'fit-content' }}
                     >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        <span>Refresh</span>
-                    </motion.button>
+                        <RefreshCw style={{ width: '1rem', height: '1rem' }} className={loading ? 'animate-spin' : ''} />
+                        Refresh
+                    </button>
                 </div>
                 <AnimatePresence>
                     {isConcealed && (
@@ -346,20 +345,13 @@ const ExchangeReport = () => {
                     )}
                 </AnimatePresence>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="glass p-8 shadow-2xl"
-                >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
                         <div>
-                            <h3 className="text-2xl font-bold mb-1 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                                Mailbox Report
-                            </h3>
-                            <p className="text-sm text-gray-400">
+                            <h2 className={styles.cardTitle}>Mailbox Data</h2>
+                            <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginTop: '0.25rem' }}>
                                 Showing {filteredData.length} of {reportData.length} mailboxes
-                                {hasActiveFilters && <span className="text-blue-400 ml-2">(filtered)</span>}
+                                {hasActiveFilters && <span style={{ color: '#3b82f6', marginLeft: '0.5rem' }}>(filtered)</span>}
                             </p>
                         </div>
                         <div className="flex items-center space-x-3 flex-wrap">
@@ -622,7 +614,7 @@ const ExchangeReport = () => {
                             </div>
                         )}
                     </div>
-                </motion.div>
+                </div>
             </div>
         </div>
     );

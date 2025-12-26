@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 import { GraphService } from '../services/graphService';
-import { AlertTriangle, Loader2, MapPin, User, Clock, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, Loader2, MapPin, User, Clock, ArrowLeft, XCircle } from 'lucide-react';
+import styles from './DetailPage.module.css';
 
 const SignInsPage = () => {
     const { instance, accounts } = useMsal();
@@ -32,72 +33,105 @@ const SignInsPage = () => {
         fetchData();
     }, [instance, accounts]);
 
-    if (loading) return <div className="p-10 flex justify-center"><Loader2 className="animate-spin text-yellow-500" /></div>;
+    if (loading) {
+        return (
+            <div className={styles.loadingContainer}>
+                <Loader2 className="animate-spin" style={{ width: '2.5rem', height: '2.5rem', color: '#eab308' }} />
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-8">
-            <button onClick={() => navigate('/service/admin')} className="mb-4 flex items-center text-gray-400 hover:text-white transition-colors">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
-            </button>
-            <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                <AlertTriangle className="w-8 h-8 text-yellow-400" />
-                Recent Failed Sign-ins
-            </h1>
+        <div className={styles.pageContainer}>
+            <div className={styles.contentWrapper}>
+                <button onClick={() => navigate('/service/admin')} className={styles.backButton}>
+                    <ArrowLeft style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
+                    Back to Dashboard
+                </button>
 
-            <div className="glass rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-white/5 border-b border-white/10">
-                            <tr>
-                                <th className="p-4 font-semibold text-gray-400">User</th>
-                                <th className="p-4 font-semibold text-gray-400">Location</th>
-                                <th className="p-4 font-semibold text-gray-400">Reason</th>
-                                <th className="p-4 font-semibold text-gray-400">Time</th>
-                                <th className="p-4 font-semibold text-gray-400">App</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {signIns.length > 0 ? signIns.map((log, i) => (
-                                <tr key={i} className="hover:bg-white/5 transition-colors">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-white/10 rounded-full">
-                                                <User className="w-4 h-4 text-gray-300" />
-                                            </div>
-                                            <div>
-                                                <div className="font-medium">{log.userPrincipalName}</div>
-                                                <div className="text-xs text-gray-500">{log.userId}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-2 text-gray-300">
-                                            <MapPin className="w-4 h-4 text-gray-500" />
-                                            {log.location?.city}, {log.location?.countryOrRegion}
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className="px-3 py-1 bg-red-500/10 text-red-400 rounded-full text-xs font-bold border border-red-500/20">
-                                            {log.status?.failureReason || 'Unknown Error'}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-gray-400 flex items-center gap-2">
-                                        <Clock className="w-4 h-4" />
-                                        {new Date(log.createdDateTime).toLocaleString()}
-                                    </td>
-                                    <td className="p-4 text-cyan-400">
-                                        {log.appDisplayName}
-                                    </td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan="5" className="p-8 text-center text-gray-500">
-                                        No recent failed sign-ins found.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div className={styles.pageHeader}>
+                    <h1 className={styles.pageTitle}>
+                        <AlertTriangle style={{ width: '2rem', height: '2rem', color: '#eab308' }} />
+                        Failed Sign-Ins
+                    </h1>
+                    <p className={styles.pageSubtitle}>
+                        Monitor and investigate failed authentication attempts across your organization
+                    </p>
+                </div>
+
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>
+                            <XCircle style={{ width: '1.5rem', height: '1.5rem', color: '#ef4444' }} />
+                            Recent Failed Attempts
+                        </h2>
+                        <span className={`${styles.badge} ${styles.badgeWarning}`}>
+                            {signIns.length} FAILED
+                        </span>
+                    </div>
+
+                    {signIns.length > 0 ? (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead className={styles.tableHead}>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Location</th>
+                                        <th>Failure Reason</th>
+                                        <th>Time</th>
+                                        <th>Application</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {signIns.map((log, i) => (
+                                        <tr key={i} className={styles.tableRow}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '9999px' }}>
+                                                        <User style={{ width: '1rem', height: '1rem', color: '#9ca3af' }} />
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: 500, color: 'white' }}>{log.userPrincipalName}</div>
+                                                        <div style={{ fontSize: '0.75rem', color: '#6b7280', fontFamily: 'monospace' }}>{log.userId}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#d1d5db' }}>
+                                                    <MapPin style={{ width: '1rem', height: '1rem', color: '#6b7280' }} />
+                                                    {log.location?.city}, {log.location?.countryOrRegion}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`${styles.badge} ${styles.badgeError}`}>
+                                                    {log.status?.failureReason || 'Unknown Error'}
+                                                </span>
+                                            </td>
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <Clock style={{ width: '1rem', height: '1rem' }} />
+                                                    {new Date(log.createdDateTime).toLocaleString()}
+                                                </div>
+                                            </td>
+                                            <td style={{ color: '#06b6d4', fontWeight: 500, fontSize: '0.875rem' }}>
+                                                {log.appDisplayName}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon}>
+                                <AlertTriangle style={{ width: '2.5rem', height: '2.5rem', color: '#22c55e' }} />
+                            </div>
+                            <h3 className={styles.emptyTitle}>No Failed Sign-Ins</h3>
+                            <p className={styles.emptyDescription}>
+                                Great news! There are no recent failed sign-in attempts in your organization.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -4,8 +4,8 @@ import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 import { GraphService } from '../services/graphService';
 import { GroupsService } from '../services/entra';
-import { ArrowLeft, Search, Download, UsersRound, Users, Flag, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Search, Download, UsersRound, Loader2 } from 'lucide-react';
+import styles from './DetailPage.module.css';
 
 const EntraGroups = () => {
     const navigate = useNavigate();
@@ -75,95 +75,118 @@ const EntraGroups = () => {
         link.click();
     };
 
+    if (loading) {
+        return (
+            <div className={styles.loadingContainer}>
+                <Loader2 className="animate-spin" style={{ width: '2.5rem', height: '2.5rem', color: '#a855f7' }} />
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-8">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto">
-                <button
-                    onClick={() => navigate('/service/entra')}
-                    className="group relative px-6 py-2.5 rounded-full text-white font-medium bg-gradient-to-r from-[#00a4ef] to-[#0078d4] hover:from-[#2bbafa] hover:to-[#1089e6] shadow-[0_0_20px_rgba(0,164,239,0.3)] hover:shadow-[0_0_30px_rgba(0,164,239,0.5)] transition-all duration-300 flex items-center gap-2 overflow-hidden border border-white/10 mb-6"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    <ArrowLeft className="w-4 h-4 relative z-10 group-hover:-translate-x-1 transition-transform" />
-                    <span className="relative z-10">Back to Dashboard</span>
+        <div className={styles.pageContainer}>
+            <div className={styles.contentWrapper}>
+                <button onClick={() => navigate('/service/entra')} className={styles.backButton}>
+                    <ArrowLeft style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
+                    Back to Dashboard
                 </button>
 
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold font-['Outfit'] bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-                            Groups
-                        </h1>
-                        <p className="text-gray-400 mt-1">Manage security and distribution groups</p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 text-gray-300">
-                            <option value="all">All Types</option>
-                            <option value="security">Security</option>
-                            <option value="distribution">Distribution</option>
-                            <option value="m365">Microsoft 365</option>
-                        </select>
-                        <div className="relative">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                            <input
-                                type="text"
-                                placeholder="Search groups..."
-                                value={filterText}
-                                onChange={(e) => setFilterText(e.target.value)}
-                                className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-48 transition-all"
-                            />
-                        </div>
-                        <button onClick={handleDownloadCSV} className="bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg px-3 py-2 text-sm transition-colors flex items-center gap-2">
-                            <Download className="w-4 h-4" /> Export
-                        </button>
-                    </div>
+                <div className={styles.pageHeader}>
+                    <h1 className={styles.pageTitle}>
+                        <UsersRound style={{ width: '2rem', height: '2rem', color: '#a855f7' }} />
+                        Groups
+                    </h1>
+                    <p className={styles.pageSubtitle}>
+                        Manage security groups, distribution lists, and Microsoft 365 groups
+                    </p>
                 </div>
 
-                {loading ? (
-                    <div className="flex items-center justify-center h-64">
-                        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                <div className={styles.filterBar}>
+                    <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className={styles.filterInput} style={{ flex: 'initial', minWidth: '180px' }}>
+                        <option value="all">All Types</option>
+                        <option value="security">Security</option>
+                        <option value="distribution">Distribution</option>
+                        <option value="m365">Microsoft 365</option>
+                    </select>
+
+                    <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+                        <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', width: '1rem', height: '1rem', color: '#6b7280' }} />
+                        <input
+                            type="text"
+                            placeholder="Search groups..."
+                            value={filterText}
+                            onChange={(e) => setFilterText(e.target.value)}
+                            className={styles.filterInput}
+                            style={{ paddingLeft: '2.75rem' }}
+                        />
                     </div>
-                ) : (
-                    <div className="glass overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-white/10 bg-white/5">
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Group Name</th>
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Type</th>
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Email</th>
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Description</th>
+                    <button onClick={handleDownloadCSV} className={`${styles.actionButton} ${styles.actionButtonSecondary}`}>
+                        <Download style={{ width: '1rem', height: '1rem' }} />
+                        Export
+                    </button>
+                </div>
+
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>Groups Directory</h2>
+                        <span className={`${styles.badge}`} style={{ background: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.3)', color: '#a855f7' }}>
+                            {filteredGroups.length} GROUPS
+                        </span>
+                    </div>
+
+                    {filteredGroups.length > 0 ? (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead className={styles.tableHead}>
+                                    <tr>
+                                        <th>Group Name</th>
+                                        <th>Type</th>
+                                        <th>Email</th>
+                                        <th>Description</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredGroups.length > 0 ? (
-                                        filteredGroups.map((group, i) => (
-                                            <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                <td className="p-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-400 font-bold">
-                                                            <UsersRound className="w-4 h-4" />
-                                                        </div>
-                                                        <span className="font-medium text-white">{group.displayName}</span>
+                                    {filteredGroups.map((group, i) => (
+                                        <tr key={i} className={styles.tableRow}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <div style={{ width: '2rem', height: '2rem', borderRadius: '9999px', background: 'rgba(168, 85, 247, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <UsersRound style={{ width: '1rem', height: '1rem', color: '#a855f7' }} />
                                                     </div>
-                                                </td>
-                                                <td className="p-4 text-gray-300 text-sm">{getGroupType(group)}</td>
-                                                <td className="p-4 text-gray-400 text-sm">{group.mail || '-'}</td>
-                                                <td className="p-4 text-gray-400 text-sm max-w-xs truncate">{group.description}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="4" className="p-8 text-center text-gray-500">
-                                                No groups found.
+                                                    <span style={{ fontWeight: 500, color: 'white' }}>{group.displayName}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {getGroupType(group) === 'Microsoft 365' ? (
+                                                    <span className={`${styles.badge} ${styles.badgeInfo}`}>M365 Group</span>
+                                                ) : getGroupType(group) === 'Security' ? (
+                                                    <span className={`${styles.badge}`} style={{ background: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.3)', color: '#a855f7' }}>Security</span>
+                                                ) : (
+                                                    <span className={`${styles.badge} ${styles.badgeSuccess}`}>Distribution</span>
+                                                )}
+                                            </td>
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem' }}>{group.mail || '-'}</td>
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem', maxWidth: '20rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {group.description || '-'}
                                             </td>
                                         </tr>
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
-            </motion.div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon} style={{ background: 'rgba(168, 85, 247, 0.08)', borderColor: 'rgba(168, 85, 247, 0.2)' }}>
+                                <UsersRound style={{ width: '2.5rem', height: '2.5rem', color: '#a855f7' }} />
+                            </div>
+                            <h3 className={styles.emptyTitle}>No Groups Found</h3>
+                            <p className={styles.emptyDescription}>
+                                No groups match your current filters. Try adjusting your search criteria.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

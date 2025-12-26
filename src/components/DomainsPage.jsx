@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 import { GraphService } from '../services/graphService';
-import { Loader2, CheckCircle2, XCircle, Globe, ShieldCheck, ShieldAlert, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Loader2, CheckCircle2, Globe, ShieldAlert, ArrowLeft } from 'lucide-react';
+import styles from './DetailPage.module.css';
 
 const DomainsPage = () => {
     const navigate = useNavigate();
@@ -35,80 +35,128 @@ const DomainsPage = () => {
         fetchDomains();
     }, [instance, accounts]);
 
-    if (loading) return (
-        <div className="flex items-center justify-center min-h-[50vh] text-blue-400">
-            <Loader2 className="w-10 h-10 animate-spin" />
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className={styles.loadingContainer}>
+                <Loader2 className="animate-spin" style={{ width: '2.5rem', height: '2.5rem', color: '#3b82f6' }} />
+            </div>
+        );
+    }
 
-    if (error) return (
-        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-400">
-            {error}
-        </div>
-    );
+    const verifiedCount = domains.filter(d => d.state === 'Verified').length;
 
     return (
-        <div className="w-full text-white">
-            <button
-                onClick={() => navigate('/service/admin')}
-                className="flex items-center text-gray-400 hover:text-white mb-6 transition-colors group"
-            >
-                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                Back to Admin
-            </button>
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold font-['Outfit'] bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent leading-tight mb-2">
-                    Domains
-                </h1>
-                <p className="text-sm text-gray-400">Manage and verify your verified domains.</p>
-            </div>
+        <div className={styles.pageContainer}>
+            <div className={styles.contentWrapper}>
+                <button onClick={() => navigate('/service/admin')} className={styles.backButton}>
+                    <ArrowLeft style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
+                    Back to Dashboard
+                </button>
 
-            <div className="glass-panel rounded-xl overflow-hidden border border-white/10">
-                <table className="w-full text-left">
-                    <thead className="bg-white/5 border-b border-white/10">
-                        <tr className="text-gray-400 text-sm uppercase tracking-wider">
-                            <th className="pb-4 pt-4 px-6 font-semibold">Domain Name</th>
-                            <th className="pb-4 pt-4 px-6 font-semibold">Status</th>
-                            <th className="pb-4 pt-4 px-6 font-semibold">Authentication</th>
-                            <th className="pb-4 pt-4 px-6 font-semibold text-center">Default</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 text-sm">
-                        {domains.map((domain) => (
-                            <tr key={domain.id} className="hover:bg-white/5 transition-colors">
-                                <td className="py-4 px-6 font-medium flex items-center space-x-3">
-                                    <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
-                                        <Globe className="w-4 h-4" />
-                                    </div>
-                                    <span>{domain.id}</span>
-                                </td>
-                                <td className="py-4 px-6">
-                                    {domain.state === 'Verified' ? (
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
-                                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                                            Verified
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                                            <ShieldAlert className="w-3 h-3 mr-1" />
-                                            {domain.state}
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="py-4 px-6 text-gray-300">
-                                    {domain.authenticationType}
-                                </td>
-                                <td className="py-4 px-6 text-center">
-                                    {domain.isDefault && (
-                                        <span className="inline-flex items-center justify-center p-1 bg-blue-500 text-white rounded-full">
-                                            <CheckCircle2 className="w-4 h-4" />
-                                        </span>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className={styles.pageHeader}>
+                    <h1 className={styles.pageTitle}>
+                        <Globe style={{ width: '2rem', height: '2rem', color: '#3b82f6' }} />
+                        Domains
+                    </h1>
+                    <p className={styles.pageSubtitle}>
+                        Manage and verify your organization's domain names and DNS settings
+                    </p>
+                </div>
+
+                {error && (
+                    <div className={`${styles.alert} ${styles.alertError}`}>
+                        <AlertCircle style={{ width: '1.5rem', height: '1.5rem', flexShrink: 0 }} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                <div className={styles.statsGrid}>
+                    <div className={styles.statCard}>
+                        <div className={styles.statLabel}>
+                            <Globe style={{ width: '1.125rem', height: '1.125rem' }} />
+                            Total Domains
+                        </div>
+                        <div className={styles.statValue}>{domains.length}</div>
+                    </div>
+                    <div className={styles.statCard}>
+                        <div className={styles.statLabel}>
+                            <CheckCircle2 style={{ width: '1.125rem', height: '1.125rem' }} />
+                            Verified
+                        </div>
+                        <div className={styles.statValue} style={{ color: '#22c55e' }}>{verifiedCount}</div>
+                    </div>
+                </div>
+
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>
+                            <Globe style={{ width: '1.5rem', height: '1.5rem', color: '#3b82f6' }} />
+                            Domain List
+                        </h2>
+                    </div>
+
+                    {domains.length > 0 ? (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead className={styles.tableHead}>
+                                    <tr>
+                                        <th>Domain Name</th>
+                                        <th>Status</th>
+                                        <th>Authentication</th>
+                                        <th style={{ textAlign: 'center' }}>Default</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {domains.map((domain) => (
+                                        <tr key={domain.id} className={styles.tableRow}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <div style={{ padding: '0.5rem', background: 'rgba(59, 130, 246, 0.15)', borderRadius: '0.5rem' }}>
+                                                        <Globe style={{ width: '1rem', height: '1rem', color: '#3b82f6' }} />
+                                                    </div>
+                                                    <span style={{ fontWeight: 500, color: 'white' }}>{domain.id}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {domain.state === 'Verified' ? (
+                                                    <span className={`${styles.badge} ${styles.badgeSuccess}`}>
+                                                        <CheckCircle2 style={{ width: '0.875rem', height: '0.875rem', marginRight: '0.375rem' }} />
+                                                        Verified
+                                                    </span>
+                                                ) : (
+                                                    <span className={`${styles.badge} ${styles.badgeWarning}`}>
+                                                        <ShieldAlert style={{ width: '0.875rem', height: '0.875rem', marginRight: '0.375rem' }} />
+                                                        {domain.state}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td style={{ color: '#d1d5db', fontSize: '0.875rem' }}>
+                                                {domain.authenticationType}
+                                            </td>
+                                            <td style={{ textAlign: 'center' }}>
+                                                {domain.isDefault && (
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem', background: '#3b82f6', borderRadius: '9999px' }}>
+                                                        <CheckCircle2 style={{ width: '1rem', height: '1rem', color: 'white' }} />
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon}>
+                                <Globe style={{ width: '2.5rem', height: '2.5rem', color: '#6b7280' }} />
+                            </div>
+                            <h3 className={styles.emptyTitle}>No Domains Found</h3>
+                            <p className={styles.emptyDescription}>
+                                No domains are configured for your organization.
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

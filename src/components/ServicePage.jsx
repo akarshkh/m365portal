@@ -386,7 +386,7 @@ const ServicePage = ({ serviceId: propServiceId }) => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white">
+        <div className="w-full">
             {/* Header removed as it is now in ServiceLayout */}
 
             <div className="w-full">

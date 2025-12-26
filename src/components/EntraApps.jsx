@@ -4,7 +4,7 @@ import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 import { GraphService } from '../services/graphService';
 import { ArrowLeft, Search, Download, Box, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import styles from './DetailPage.module.css';
 
 const EntraApps = () => {
     const navigate = useNavigate();
@@ -59,88 +59,103 @@ const EntraApps = () => {
         link.click();
     };
 
+    if (loading) {
+        return (
+            <div className={styles.loadingContainer}>
+                <Loader2 className="animate-spin" style={{ width: '2.5rem', height: '2.5rem', color: '#06b6d4' }} />
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-8">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto">
-                <button
-                    onClick={() => navigate('/service/entra')}
-                    className="group relative px-6 py-2.5 rounded-full text-white font-medium bg-gradient-to-r from-[#00a4ef] to-[#0078d4] hover:from-[#2bbafa] hover:to-[#1089e6] shadow-[0_0_20px_rgba(0,164,239,0.3)] hover:shadow-[0_0_30px_rgba(0,164,239,0.5)] transition-all duration-300 flex items-center gap-2 overflow-hidden border border-white/10"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    <ArrowLeft className="w-4 h-4 relative z-10 group-hover:-translate-x-1 transition-transform" />
-                    <span className="relative z-10">Back to Entra ID</span>
+        <div className={styles.pageContainer}>
+            <div className={styles.contentWrapper}>
+                <button onClick={() => navigate('/service/entra')} className={styles.backButton}>
+                    <ArrowLeft style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
+                    Back to Dashboard
                 </button>
 
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold font-['Outfit'] bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                            App Registrations
-                        </h1>
-                        <p className="text-gray-400 mt-1">Manage enterprise applications</p>
-                    </div>
-                    <div className="flex gap-4">
-                        <div className="relative">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                            <input
-                                type="text"
-                                placeholder="Search apps..."
-                                value={filterText}
-                                onChange={(e) => setFilterText(e.target.value)}
-                                className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-64 transition-all"
-                            />
-                        </div>
-                        <button onClick={handleDownloadCSV} className="btn-primary !py-2 !px-4 !text-sm flex items-center gap-2">
-                            <Download className="w-4 h-4" /> Export CSV
-                        </button>
-                    </div>
+                <div className={styles.pageHeader}>
+                    <h1 className={styles.pageTitle}>
+                        <Box style={{ width: '2rem', height: '2rem', color: '#06b6d4' }} />
+                        App Registrations
+                    </h1>
+                    <p className={styles.pageSubtitle}>
+                        Manage enterprise applications and service principals
+                    </p>
                 </div>
 
-                {loading ? (
-                    <div className="flex items-center justify-center h-64">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                <div className={styles.filterBar}>
+                    <div style={{ position: 'relative', flex: 1, minWidth: '300px' }}>
+                        <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', width: '1rem', height: '1rem', color: '#6b7280' }} />
+                        <input
+                            type="text"
+                            placeholder="Search apps..."
+                            value={filterText}
+                            onChange={(e) => setFilterText(e.target.value)}
+                            className={styles.filterInput}
+                            style={{ paddingLeft: '2.75rem' }}
+                        />
                     </div>
-                ) : (
-                    <div className="glass overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-white/10 bg-white/5">
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Display Name</th>
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Application (Client) ID</th>
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Created</th>
-                                        <th className="p-4 font-semibold text-gray-300 text-sm">Audience</th>
+                    <button onClick={handleDownloadCSV} className={`${styles.actionButton} ${styles.actionButtonSecondary}`}>
+                        <Download style={{ width: '1rem', height: '1rem' }} />
+                        Export
+                    </button>
+                </div>
+
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>Applications</h2>
+                        <span className={`${styles.badge}`} style={{ background: 'rgba(6, 182, 212, 0.1)', borderColor: 'rgba(6, 182, 212, 0.3)', color: '#06b6d4' }}>
+                            {filteredApps.length} APPS
+                        </span>
+                    </div>
+
+                    {filteredApps.length > 0 ? (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead className={styles.tableHead}>
+                                    <tr>
+                                        <th>Display Name</th>
+                                        <th>Application (Client) ID</th>
+                                        <th>Created</th>
+                                        <th>Audience</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredApps.length > 0 ? (
-                                        filteredApps.map((app, i) => (
-                                            <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                <td className="p-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-cyan-600/20 flex items-center justify-center text-cyan-400 font-bold">
-                                                            <Box className="w-4 h-4" />
-                                                        </div>
-                                                        <span className="font-medium text-white">{app.displayName}</span>
+                                    {filteredApps.map((app, i) => (
+                                        <tr key={i} className={styles.tableRow}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <div style={{ width: '2rem', height: '2rem', borderRadius: '9999px', background: 'rgba(6, 182, 212, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Box style={{ width: '1rem', height: '1rem', color: '#06b6d4' }} />
                                                     </div>
-                                                </td>
-                                                <td className="p-4 text-gray-300 text-sm font-mono">{app.appId}</td>
-                                                <td className="p-4 text-gray-400 text-sm">{new Date(app.createdDateTime).toLocaleDateString()}</td>
-                                                <td className="p-4 text-gray-400 text-sm">{app.signInAudience}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="4" className="p-8 text-center text-gray-500">
-                                                No applications found.
+                                                    <span style={{ fontWeight: 500, color: 'white' }}>{app.displayName}</span>
+                                                </div>
                                             </td>
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem', fontFamily: 'monospace' }}>{app.appId}</td>
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                                                {new Date(app.createdDateTime).toLocaleDateString()}
+                                            </td>
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem' }}>{app.signInAudience}</td>
                                         </tr>
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
-            </motion.div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon} style={{ background: 'rgba(6, 182, 212, 0.08)', borderColor: 'rgba(6, 182, 212, 0.2)' }}>
+                                <Box style={{ width: '2.5rem', height: '2.5rem', color: '#06b6d4' }} />
+                            </div>
+                            <h3 className={styles.emptyTitle}>No Applications Found</h3>
+                            <p className={styles.emptyDescription}>
+                                {filterText ? `No applications match "${filterText}"` : "No app registrations found in your organization."}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

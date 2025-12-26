@@ -2,23 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { GraphService } from '../services/graphService';
 import { loginRequest } from '../authConfig';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Trash2, RefreshCw, AlertCircle, Loader2, Search, ArrowLeft
-} from 'lucide-react';
+import { Trash2, RefreshCw, AlertCircle, Loader2, Search, ArrowLeft, UserX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import styles from './DetailPage.module.css';
 
 const DeletedUsersPage = () => {
     const { instance, accounts } = useMsal();
     const navigate = useNavigate();
-
-    // State
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filterText, setFilterText] = useState('');
 
-    // Fetch Data
     const fetchData = async () => {
         setLoading(true);
         setError(null);
@@ -45,7 +40,6 @@ const DeletedUsersPage = () => {
         fetchData();
     }, [accounts]);
 
-    // Filtering
     const filteredUsers = users.filter(user => {
         const searchStr = filterText.toLowerCase();
         const name = user.displayName?.toLowerCase() || '';
@@ -53,98 +47,115 @@ const DeletedUsersPage = () => {
         return name.includes(searchStr) || email.includes(searchStr);
     });
 
+    if (loading) {
+        return (
+            <div className={styles.loadingContainer}>
+                <Loader2 className="animate-spin" style={{ width: '2.5rem', height: '2.5rem', color: '#ef4444' }} />
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-8">
-            {/* Header */}
-            <div className="max-w-7xl mx-auto">
-                <button
-                    onClick={() => navigate('/service/admin')}
-                    className="flex items-center text-gray-400 hover:text-white mb-6 transition-colors group"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Back to Admin
+        <div className={styles.pageContainer}>
+            <div className={styles.contentWrapper}>
+                <button onClick={() => navigate('/service/admin')} className={styles.backButton}>
+                    <ArrowLeft style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
+                    Back to Dashboard
                 </button>
 
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold font-['Outfit'] bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent leading-tight mb-2">
-                            Deleted Users
-                        </h1>
-                        <p className="text-sm text-gray-400">Manage recently deleted users (Soft Deleted)</p>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={filterText}
-                                onChange={(e) => setFilterText(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 w-64"
-                            />
-                        </div>
-
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={fetchData}
-                            className="p-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all"
-                        >
-                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        </motion.button>
-                    </div>
+                <div className={styles.pageHeader}>
+                    <h1 className={styles.pageTitle}>
+                        <Trash2 style={{ width: '2rem', height: '2rem', color: '#ef4444' }} />
+                        Deleted Users
+                    </h1>
+                    <p className={styles.pageSubtitle}>
+                        Manage and monitor recently deleted users in your organization (soft deleted, can be restored)
+                    </p>
                 </div>
 
-                {/* Content */}
-                <div className="glass-panel rounded-xl overflow-hidden min-h-[400px]">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Loader2 className="w-10 h-10 text-red-500 animate-spin mb-4" />
-                            <p className="text-gray-400">Fetching deleted users...</p>
-                        </div>
-                    ) : error ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-red-400">
-                            <AlertCircle className="w-10 h-10 mb-4" />
-                            <p>{error}</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-white/5 border-b border-white/10">
+                {error && (
+                    <div className={`${styles.alert} ${styles.alertError}`}>
+                        <AlertCircle style={{ width: '1.5rem', height: '1.5rem', flexShrink: 0 }} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                <div className={styles.filterBar}>
+                    <div style={{ position: 'relative', flex: 1, minWidth: '300px' }}>
+                        <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', width: '1rem', height: '1rem', color: '#6b7280' }} />
+                        <input
+                            type="text"
+                            placeholder="Search by name or email..."
+                            value={filterText}
+                            onChange={(e) => setFilterText(e.target.value)}
+                            className={styles.filterInput}
+                            style={{ paddingLeft: '2.75rem' }}
+                        />
+                    </div>
+                    <button
+                        onClick={fetchData}
+                        className={`${styles.actionButton} ${styles.actionButtonSecondary}`}
+                        disabled={loading}
+                    >
+                        <RefreshCw style={{ width: '1rem', height: '1rem' }} className={loading ? 'animate-spin' : ''} />
+                        Refresh
+                    </button>
+                </div>
+
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>
+                            <UserX style={{ width: '1.5rem', height: '1.5rem', color: '#ef4444' }} />
+                            Deleted Users List
+                        </h2>
+                        <span className={`${styles.badge} ${styles.badgeError}`}>
+                            {filteredUsers.length} DELETED
+                        </span>
+                    </div>
+
+                    {filteredUsers.length > 0 ? (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead className={styles.tableHead}>
                                     <tr>
-                                        <th className="py-4 px-6 font-semibold text-xs text-gray-400 uppercase tracking-wider">Display Name</th>
-                                        <th className="py-4 px-6 font-semibold text-xs text-gray-400 uppercase tracking-wider">User Principal Name</th>
-                                        <th className="py-4 px-6 font-semibold text-xs text-gray-400 uppercase tracking-wider">ID</th>
-                                        <th className="py-4 px-6 font-semibold text-xs text-gray-400 uppercase tracking-wider">Deleted Date</th>
+                                        <th>Display Name</th>
+                                        <th>User Principal Name</th>
+                                        <th>User ID</th>
+                                        <th>Deleted Date</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                                        <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                                            <td className="py-4 px-6">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
-                                                        <Trash2 className="w-4 h-4" />
+                                <tbody>
+                                    {filteredUsers.map((user) => (
+                                        <tr key={user.id} className={styles.tableRow}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <div style={{ width: '2rem', height: '2rem', borderRadius: '9999px', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Trash2 style={{ width: '1rem', height: '1rem', color: '#ef4444' }} />
                                                     </div>
-                                                    <span className="font-medium text-white">{user.displayName}</span>
+                                                    <span style={{ fontWeight: 500, color: 'white' }}>{user.displayName}</span>
                                                 </div>
                                             </td>
-                                            <td className="py-4 px-6 text-gray-400 text-sm">{user.userPrincipalName}</td>
-                                            <td className="py-4 px-6 text-gray-500 text-xs font-mono">{user.id}</td>
-                                            <td className="py-4 px-6 text-gray-400 text-sm">
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem' }}>{user.userPrincipalName}</td>
+                                            <td style={{ color: '#6b7280', fontSize: '0.75rem', fontFamily: 'monospace' }}>{user.id}</td>
+                                            <td style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
                                                 {user.deletedDateTime ? new Date(user.deletedDateTime).toLocaleDateString() : 'N/A'}
                                             </td>
                                         </tr>
-                                    )) : (
-                                        <tr>
-                                            <td colSpan="4" className="py-16 text-center text-gray-500">
-                                                No deleted users found
-                                            </td>
-                                        </tr>
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
+                        </div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon} style={{ background: 'rgba(34, 197, 94, 0.08)', borderColor: 'rgba(34, 197, 94, 0.2)' }}>
+                                <Trash2 style={{ width: '2.5rem', height: '2.5rem', color: '#22c55e' }} />
+                            </div>
+                            <h3 className={styles.emptyTitle}>No Deleted Users</h3>
+                            <p className={styles.emptyDescription}>
+                                {filterText
+                                    ? `No deleted users match "${filterText}"`
+                                    : "There are no deleted users in your organization's recycle bin."}
+                            </p>
                         </div>
                     )}
                 </div>
