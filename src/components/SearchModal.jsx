@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Search, Clock, ArrowRight, Command } from 'lucide-react';
-import { searchableItems, categories, fuzzySearch } from '../data/searchData';
+import { searchableItems, fuzzySearch } from '../data/searchData';
 import styles from './SearchModal.module.css';
 
 const SearchModal = ({ isOpen, onClose }) => {
@@ -9,7 +9,6 @@ const SearchModal = ({ isOpen, onClose }) => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState(searchableItems);
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const [selectedCategory, setSelectedCategory] = useState('all');
     const [recentSearches, setRecentSearches] = useState([]);
     const inputRef = useRef(null);
     const resultsRef = useRef(null);
@@ -40,10 +39,8 @@ const SearchModal = ({ isOpen, onClose }) => {
         setSelectedIndex(0);
     }, [query]);
 
-    // Filter by category
-    const displayedResults = selectedCategory === 'all'
-        ? results
-        : results.filter(item => item.category.toLowerCase().includes(selectedCategory));
+    // Filter by category - removed, show all results
+    const displayedResults = results;
 
     // Keyboard navigation
     useEffect(() => {
@@ -125,20 +122,6 @@ const SearchModal = ({ isOpen, onClose }) => {
                     <button onClick={onClose} className={styles.closeBtn}>
                         <X size={18} />
                     </button>
-                </div>
-
-                {/* Category Filters */}
-                <div className={styles.categories}>
-                    {categories.map(cat => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setSelectedCategory(cat.id)}
-                            className={`${styles.categoryBtn} ${selectedCategory === cat.id ? styles.active : ''}`}
-                            style={{ '--category-color': cat.color }}
-                        >
-                            {cat.name}
-                        </button>
-                    ))}
                 </div>
 
                 {/* Results */}
